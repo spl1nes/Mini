@@ -16,7 +16,6 @@ use phpOMS\Uri\HttpUri;
 // Config
 $RATE_LIMIT = 500;//100000; too many, request times out in between
 $time = \time();
-$date = (int) ($time / (60 * 60 * 24));
 $max_id = 6834266;
 
 // Load match id
@@ -159,7 +158,7 @@ for ($i = 0; $i < $RATE_LIMIT; ++$i) {
             'driver' => clone $driver,
             'points' => (int) $score,
             'rank' => (int) $rank,
-            'start' => ((int) ($matchResponse->data['startDate'] ?? 0)) / (60 * 60 * 24),
+            'start' => (int) ($matchResponse->data['startDate'] ?? 0),
         ];
     }
 
