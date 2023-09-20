@@ -15,6 +15,7 @@ $time = \time();
 $date = (int) ($time / (60 * 60 * 24));
 $email = '';
 $password = '';
+$max_id = 6834266;
 
 class Driver
 {
@@ -39,84 +40,21 @@ class DriverMapper extends DataMapperFactory
     public const PRIMARYFIELD = 'driver_id';
 }
 
-class Elo
-{
-    public int $id = 0;
-    public string $driver = '';
-    public int $elo = 1500;
-    public int $rd = 50;
-}
-
-class NullElo extends Elo {}
-
-class EloMapper extends DataMapperFactory
-{
-    public const COLUMNS = [
-        'elo_id'     => ['name' => 'elo_id',     'type' => 'int',    'internal' => 'id'],
-        'elo_driver' => ['name' => 'elo_driver', 'type' => 'string', 'internal' => 'driver'],
-        'elo_elo'    => ['name' => 'elo_elo',    'type' => 'int',    'internal' => 'elo'],
-    ];
-
-    public const TABLE = 'elo';
-    public const PRIMARYFIELD = 'elo_id';
-}
-
-class Glicko
-{
-    public int $id = 0;
-    public string $driver = '';
-    public int $elo = 1500;
-    public int $rd = 50;
-}
-
-class NullGlicko extends Glicko {}
-
-class GlickoMapper extends DataMapperFactory
-{
-    public const COLUMNS = [
-        'glicko_id'     => ['name' => 'glicko_id',     'type' => 'int',    'internal' => 'id'],
-        'glicko_driver' => ['name' => 'glicko_driver', 'type' => 'string', 'internal' => 'driver'],
-        'glicko_elo'    => ['name' => 'glicko_elo',    'type' => 'int',    'internal' => 'elo'],
-        'glicko_rd'     => ['name' => 'glicko_rd',     'type' => 'int',    'internal' => 'rd'],
-    ];
-
-    public const TABLE = 'glicko';
-    public const PRIMARYFIELD = 'glicko_id';
-}
-
-class Glicko2
-{
-    public int $id = 0;
-    public string $driver = '';
-    public int $elo = 1500;
-    public float $vol = 0.06;
-    public int $rd = 50;
-}
-
-class NullGlicko2 extends Glicko2 {}
-
-class Glicko2Mapper extends DataMapperFactory
-{
-    public const COLUMNS = [
-        'glicko2_id'     => ['name' => 'glicko2_id',     'type' => 'int',    'internal' => 'id'],
-        'glicko2_driver' => ['name' => 'glicko2_driver', 'type' => 'string', 'internal' => 'driver'],
-        'glicko2_vol'    => ['name' => 'glicko2_vol',    'type' => 'float',  'internal' => 'vol'],
-        'glicko2_elo'    => ['name' => 'glicko2_elo',    'type' => 'int',    'internal' => 'elo'],
-        'glicko2_rd'     => ['name' => 'glicko2_rd',     'type' => 'int',    'internal' => 'rd'],
-    ];
-
-    public const TABLE = 'glicko2';
-    public const PRIMARYFIELD = 'glicko2_id';
-}
-
 class NadeoMatch
 {
     public int $id = 0;
     public int $nid = 0;
     public string $driver = '';
-    public int $start = 1500;
+    public int $start = 0;
     public int $score = 0;
     public int $rank = 0;
+    public int $points = 0;
+    public int $elo_score = 0;
+    public int $glicko1_score = 0;
+    public int $glicko1_rd = 0;
+    public int $glicko2_score = 0;
+    public int $glicko2_rd = 0;
+    public float $glicko2_vol = 0.0;
 }
 
 class NullNadeoMatch extends NadeoMatch {}
@@ -130,15 +68,18 @@ class NadeoMatchMapper extends DataMapperFactory
         'match_start'  => ['name' => 'match_start',  'type' => 'int',    'internal' => 'start'],
         'match_score'  => ['name' => 'match_score',  'type' => 'int',    'internal' => 'score'],
         'match_rank'   => ['name' => 'match_rank',   'type' => 'int',    'internal' => 'rank'],
+        'match_points'   => ['name' => 'match_points',   'type' => 'int',    'internal' => 'points'],
+        'match_elo_score'   => ['name' => 'match_elo_score',   'type' => 'int',    'internal' => 'elo_score'],
+        'match_glicko1_score'   => ['name' => 'match_glicko1_score',   'type' => 'int',    'internal' => 'glicko1_score'],
+        'match_glicko1_rd'   => ['name' => 'match_glicko1_rd',   'type' => 'int',    'internal' => 'glicko1_rd'],
+        'match_glicko2_score'   => ['name' => 'match_glicko2_score',   'type' => 'int',    'internal' => 'glicko2_score'],
+        'match_glicko2_rd'   => ['name' => 'match_glicko2_rd',   'type' => 'int',    'internal' => 'glicko2_rd'],
+        'match_glicko2_vol'   => ['name' => 'match_glicko2_vol',   'type' => 'float',    'internal' => 'glicko2_vol'],
     ];
 
     public const TABLE = 'match';
     public const PRIMARYFIELD = 'match_id';
 }
-
-// Glicko variables
-$c = 34.6; // Glicko constant
-$q = \log(10) / 400;
 
 // Load match id
 if (!\is_file(__DIR__ . '/match_id.txt')) {
@@ -224,7 +165,7 @@ if ($lastMatch->id !== 0) {
 for ($i = 0; $i < $RATE_LIMIT; ++$i) {
     ++$match_id_new;
 
-    if ($match_id_new > 6834266) {
+    if ($match_id_new > $max_id) {
         exit;
     }
 
@@ -302,7 +243,7 @@ for ($i = 0; $i < $RATE_LIMIT; ++$i) {
 
         $uid = $participant['participant'];
         $rank = $participant['rank'];
-        $score = $participant['score'];
+        $points = $participant['score'];
 
         $driver = DriverMapper::get()->where('uid', (string) $uid)->execute();
 
@@ -319,7 +260,7 @@ for ($i = 0; $i < $RATE_LIMIT; ++$i) {
         $drivers[$rank] = $driver;
         $match[$rank] = [
             'driver' => clone $driver,
-            'score' => (int) $score,
+            'points' => (int) $score,
             'rank' => (int) $rank,
             'start' => ((int) ($matchResponse->data['startDate'] ?? 0)) / (60 * 60 * 24),
         ];
@@ -335,7 +276,7 @@ for ($i = 0; $i < $RATE_LIMIT; ++$i) {
         $m->nid = $match_id_new;
         $m->driver = $mData['driver']->uid;
         $m->start = (int) $mData['start'];
-        $m->score = $mData['score'];
+        $m->points = $mData['points'];
         $m->rank = $mData['rank'];
 
         NadeoMatchMapper::create()->execute($m);
