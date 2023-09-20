@@ -132,7 +132,6 @@ for ($i = 0; $i < $RATE_LIMIT; ++$i) {
 
     $drivers = [];
     $match = [];
-    $eloToCheck = [];
 
     foreach ($participantsResponse->data as $participant) {
         if (\is_string($participant)) {
@@ -151,8 +150,6 @@ for ($i = 0; $i < $RATE_LIMIT; ++$i) {
         if ($driver->uid === '') {
             $driver = new Driver();
             $driver->uid = (string) $uid;
-
-            $eloToCheck[] = (string) $uid;
 
             DriverMapper::create()->execute($driver);
         }
