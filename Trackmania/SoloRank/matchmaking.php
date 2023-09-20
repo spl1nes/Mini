@@ -52,30 +52,6 @@ if ($authResponse->header->status !== 200) {
     exit;
 }
 
-// Service Authentication
-$request = new HttpRequest(new HttpUri('https://public-ubiservices.ubi.com/v3/profiles/sessions'));
-$request->header->set('Content-Type', 'application/json');
-$request->header->set('Ubi-AppId', '86263886-327a-4328-ac69-527f0d20a237');
-$request->header->set('Authorization', 'Basic ' . \base64_encode($email . ':' . $password));
-$request->header->set('User-Agent', 'Solo Ranking / ' . $email);
-$request->setMethod('POST');
-$request->data['audience'] = 'NadeoServices';
-$response = Rest::request($request);
-
-$request = new HttpRequest(new HttpUri('https://prod.trackmania.core.nadeo.online/v2/authentication/token/ubiservices'));
-$request->header->set('Content-Type', 'application/json');
-$request->header->set('Authorization', 'ubi_v1 t=' . \trim($response->data['ticket'] ?? ''));
-$request->header->set('User-Agent', 'Solo Ranking / ' . $email);
-$request->setMethod('POST');
-$request->data['audience'] = 'NadeoServices';
-$authResponse2 = Rest::request($request);
-
-if ($authResponse2->header->status !== 200) {
-    \sleep(60);
-
-    exit;
-}
-
 $match_id_new = $match_id;
 
 $errorCounter = 0;
