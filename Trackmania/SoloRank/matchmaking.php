@@ -1,5 +1,7 @@
 <?php
 
+// run with nohup watch -n 2 matchmaking.php &
+
 include __DIR__ . '/phpOMS/Autoloader.php';
 
 use phpOMS\DataStorage\Database\Connection\SQLiteConnection;
