@@ -282,7 +282,7 @@ for ($i = 0; $i < $RATE_LIMIT; ++$i) {
         NadeoMatchMapper::create()->execute($m);
     }
 
-    \usleep(500000);
+    \usleep(100000);
 }
 
 $lastMatch = NadeoMatchMapper::get()->sort('match_nid', 'DESC')->limit(1)->execute();
